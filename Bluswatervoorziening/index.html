@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <script>
+      (async () => {
+	const subdir = 'Bluswatervoorziening';
+        const response = await fetch('https://api.github.com/repos/Geo-BI-VrIJsselland/iconen/contents/' + subdir);
+        const data = await response.json();
+        let htmlString = '<h2>' + subdir + '</h2>';
+        htmlString += '<table class="table"><tr><th>Naam</th><th>Icoon</th></tr>';
+        for (let file of data) {
+          htmlString += `<tr><td><a href="${file.html_url}">${file.name}</a></td>`;
+          htmlString += `<td><img src="${file.download_url}" alt="${file.name}" width="50px"></td></tr>`;
+        }
+        htmlString += '</table>';
+        document.getElementsByTagName('body')[0].innerHTML = htmlString;
+      })()
+    </script>
+  <body>
+</html>
