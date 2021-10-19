@@ -5,7 +5,7 @@
   <body>
     <script>
       (async () => {
-	const subdir = 'WitteKaart';
+	const subdir = 'ObjectTypes';
         const response = await fetch('https://api.github.com/repos/Geo-BI-VrIJsselland/iconen/contents/' + subdir);
         const data = await response.json();
         let htmlString = '<h2>' + subdir + '</h2>';
