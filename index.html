@@ -1,7 +1,94 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Iconen overzicht</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fa;
+    }
+
+    header {
+      background: #1f4e79;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 { margin: 0; }
+
+    .container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    img {
+      max-height: 70px;
+      margin-bottom: 10px;
+    }
+
+    button.copy-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    a.open-btn {
+      background: #0078d4;
+      color: white;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      text-decoration: none;
+      margin-left: 5px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 10px;
+      color: white;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1 id="title">Laden...</h1>
+  <div id="backBtn"></div>
+</header>
+
+<div class="container" id="container"></div>
+
 <script>
 (async () => {
 
   const repo = "Geo-BI-VrIJsselland/iconen";
+  const branch = "main";
+
   const container = document.getElementById("container");
   const title = document.getElementById("title");
   const backBtn = document.getElementById("backBtn");
@@ -9,93 +96,76 @@
   const params = new URLSearchParams(window.location.search);
   const dir = params.get("dir");
 
-  const path = dir ? `/${dir}` : "";
-  const url = `https://api.github.com/repos/${repo}/contents${path}`;
+  const baseRaw = `https://raw.githubusercontent.com/${repo}/${branch}/`;
 
-  try {
-    const res = await fetch(url);
+  const res = await fetch(baseRaw + "index.json");
+  const data = await res.json();
 
-    if (!res.ok) {
-      container.innerHTML = `Fout bij laden (${res.status})`;
-      return;
+  // 📁 MAPPEN
+  if (!dir) {
+    title.innerText = "Iconen overzicht";
+
+    for (let folder in data) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div style="font-size:40px;">📁</div>
+        <div>${folder}</div>
+      `;
+
+      card.onclick = () => {
+        window.location.href = `?dir=${folder}`;
+      };
+
+      container.appendChild(card);
     }
+  }
 
-    const data = await res.json();
+  // 🖼️ ICONEN
+  if (dir && data[dir]) {
 
-    if (!Array.isArray(data)) {
-      container.innerHTML = `API fout 😬`;
-      console.log(data);
-      return;
-    }
+    title.innerText = dir;
+    backBtn.innerHTML = `<span class="back" onclick="window.location.href='?'">⬅ Terug</span>`;
 
-    title.innerText = dir ? dir : "Iconen overzicht";
+    for (let file of data[dir]) {
 
-    if (dir) {
-      backBtn.innerHTML = `<span class="back" onclick="window.location.href='?'">⬅ Terug</span>`;
-    }
-
-    for (let item of data) {
+      const url = `${baseRaw}${dir}/${file}`;
 
       const card = document.createElement("div");
       card.className = "card";
 
-      // 📁 MAP
-      if (item.type === "dir") {
+      card.innerHTML = `
+        <img src="${url}">
+        <div style="font-size:12px;">${file}</div>
 
-        card.innerHTML = `
-          <div style="font-size:40px;">📁</div>
-          <div>${item.name}</div>
-        `;
+        <div style="margin-top:8px;">
+          <button class="copy-btn">📋</button>
+          <a class="open-btn" href="${url}" target="_blank">🔗</a>
+        </div>
 
-        card.onclick = () => {
-          window.location.href = `?dir=${item.name}`;
-        };
-      }
+        <div class="copy-msg" style="display:none;font-size:11px;color:green;">
+          Gekopieerd!
+        </div>
+      `;
 
-      // 🖼️ ICOON
-      if (item.type === "file" && item.name.match(/\.(png|svg|jpg)$/i)) {
+      card.querySelector(".copy-btn").onclick = async (e) => {
+        e.stopPropagation();
 
-        card.innerHTML = `
-          <img src="${item.download_url}">
-          <div style="font-size:12px;">${item.name}</div>
+        await navigator.clipboard.writeText(url);
 
-          <div style="margin-top:8px;">
-            <button class="copy-btn">📋 Kopieer</button>
-            <a class="open-btn" href="${item.download_url}" target="_blank">🔗 Open</a>
-          </div>
+        const msg = card.querySelector(".copy-msg");
+        msg.style.display = "block";
 
-          <div class="copy-msg" style="display:none;font-size:11px;color:green;">
-            Gekopieerd!
-          </div>
-        `;
-
-        // 📋 kopieer knop
-        card.querySelector(".copy-btn").onclick = async (e) => {
-          e.stopPropagation();
-
-          try {
-            await navigator.clipboard.writeText(item.download_url);
-
-            const msg = card.querySelector(".copy-msg");
-            msg.style.display = "block";
-
-            setTimeout(() => {
-              msg.style.display = "none";
-            }, 1200);
-
-          } catch (err) {
-            alert("Kopiëren mislukt 😬");
-          }
-        };
-      }
+        setTimeout(() => msg.style.display = "none", 1000);
+      };
 
       container.appendChild(card);
     }
-
-  } catch (e) {
-    container.innerHTML = `Script fout 😬`;
-    console.error(e);
   }
 
 })();
 </script>
+
+</body>
+</html>
