@@ -2,13 +2,13 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <title>ImROI Iconen Overzicht</title>
+  <title>Iconen overzicht</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       background: #f5f7fa;
-      color: #333;
     }
 
     header {
@@ -18,73 +18,39 @@
       text-align: center;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 24px;
-    }
+    h1 { margin: 0; }
 
     .container {
       padding: 20px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 20px;
     }
 
     .card {
       background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
       padding: 15px;
       text-align: center;
-      transition: transform 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      cursor: pointer;
     }
 
     .card:hover {
       transform: translateY(-5px);
     }
 
-    .preview {
-      height: 80px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .preview img {
+    img {
       max-height: 70px;
-      max-width: 100%;
-    }
-
-    .title {
-      font-weight: bold;
       margin-bottom: 10px;
     }
 
-    .buttons a {
+    .back {
       display: inline-block;
-      margin: 5px;
-      padding: 6px 10px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 12px;
-    }
-
-    .btn-map {
-      background: #0078d4;
+      margin-top: 10px;
       color: white;
-    }
-
-    .btn-sld {
-      background: #e5533d;
-      color: white;
-    }
-
-    footer {
-      text-align: center;
-      padding: 10px;
-      font-size: 12px;
-      color: #777;
+      text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -92,52 +58,82 @@
 <body>
 
 <header>
-  <h1>Veiligheidsregio IJsselland – ImROI Iconen</h1>
+  <h1 id="title">Laden...</h1>
+  <div id="backBtn"></div>
 </header>
 
 <div class="container" id="container"></div>
 
-<footer>
-  Automatisch gegenereerd vanuit GitHub repository
-</footer>
-
 <script>
 (async () => {
+
   const repo = "Geo-BI-VrIJsselland/iconen";
-  const baseUrl = `https://api.github.com/repos/${repo}/contents/`;
-  const container = document.getElementById('container');
+  const container = document.getElementById("container");
+  const title = document.getElementById("title");
+  const backBtn = document.getElementById("backBtn");
 
-  const response = await fetch(baseUrl);
-  const json = await response.json();
+  const params = new URLSearchParams(window.location.search);
+  const dir = params.get("dir");
 
-  const folders = json.filter(file => file.type === 'dir');
+  const path = dir ? `/${dir}` : "";
+  const url = `https://api.github.com/repos/${repo}/contents${path}`;
 
-  for (let folder of folders) {
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
 
-    // probeer eerste afbeelding uit map te halen als preview
-    let previewImg = '';
-    try {
-      const res = await fetch(baseUrl + folder.name);
-      const files = await res.json();
-      const img = files.find(f => f.name.endsWith('.png') || f.name.endsWith('.svg'));
-      if (img) previewImg = img.download_url;
-    } catch (e) {}
+    if (!Array.isArray(data)) {
+      container.innerHTML = "Fout bij laden 😬";
+      return;
+    }
 
-    const card = document.createElement('div');
-    card.className = 'card';
+    // Titel aanpassen
+    title.innerText = dir ? dir : "Iconen overzicht";
 
-    card.innerHTML = `
-      <div class="preview">
-        ${previewImg ? `<img src="${previewImg}" alt="">` : '🗂️'}
-      </div>
-      <div class="title">${folder.name}</div>
-      <div class="buttons">
-        <a class="btn-map" href="${folder.path}">Map</a>
-      </div>
-    `;
+    // Back knop
+    if (dir) {
+      backBtn.innerHTML = `<span class="back" onclick="window.location.href='?'">⬅ Terug</span>`;
+    }
 
-    container.appendChild(card);
+    for (let item of data) {
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      // MAP → klikbaar
+      if (item.type === "dir") {
+
+        card.innerHTML = `
+          <div style="font-size:40px;">📁</div>
+          <div>${item.name}</div>
+        `;
+
+        card.onclick = () => {
+          window.location.href = `?dir=${item.name}`;
+        };
+      }
+
+      // BESTAND (icoon)
+      if (item.type === "file" && item.name.match(/\.(png|svg|jpg)$/i)) {
+
+        card.innerHTML = `
+          <img src="${item.download_url}">
+          <div>${item.name}</div>
+        `;
+
+        card.onclick = () => {
+          window.open(item.html_url, "_blank");
+        };
+      }
+
+      container.appendChild(card);
+    }
+
+  } catch (e) {
+    container.innerHTML = "Script fout 😬";
+    console.error(e);
   }
+
 })();
 </script>
 
