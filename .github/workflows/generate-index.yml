@@ -10,45 +10,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Generate index.json
         run: |
-          echo "{}" > index.json
-          echo "{" > temp.json
+          echo "{" > index.json
+          first_dir=true
 
           for dir in */ ; do
             dirname=$(basename "$dir")
 
-            # skip hidden/system folders
+            # skip .github
             if [[ "$dirname" == ".github" ]]; then
               continue
             fi
 
-            echo "  \"$dirname\": [" >> temp.json
+            if [ "$first_dir" = true ]; then
+              first_dir=false
+            else
+              echo "," >> index.json
+            fi
 
-            first=true
+            echo -n "  \"$dirname\": [" >> index.json
+
+            first_file=true
             for file in "$dir"*; do
               if [[ -f "$file" && "$file" =~ \.(png|svg|jpg)$ ]]; then
                 filename=$(basename "$file")
 
-                if [ "$first" = true ]; then
-                  first=false
+                if [ "$first_file" = true ]; then
+                  first_file=false
                 else
-                  echo "," >> temp.json
+                  echo -n "," >> index.json
                 fi
 
-                echo -n "    \"$filename\"" >> temp.json
+                echo -n "\"$filename\"" >> index.json
               fi
             done
 
-            echo "" >> temp.json
-            echo "  ]," >> temp.json
+            echo -n "]" >> index.json
           done
 
-          # laatste comma verwijderen
-          sed '$ s/,$//' temp.json >> index.json
+          echo "" >> index.json
           echo "}" >> index.json
 
       - name: Commit index.json
