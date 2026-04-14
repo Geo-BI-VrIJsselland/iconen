@@ -126,16 +126,15 @@
     const card = document.createElement('div');
     card.className = 'card';
 
-    card.innerHTML = `
-      <div class="preview">
-        ${previewImg ? `<img src="${previewImg}" alt="">` : '🗂️'}
-      </div>
-      <div class="title">${folder.name}</div>
-      <div class="buttons">
-        <a class="btn-map" href="${folder.path}">Map</a>
-        <a class="btn-sld" href="https://github.com/${repo}/blob/master/${folder.name}.sld">SLD</a>
-      </div>
-    `;
+card.innerHTML = `
+  <div class="preview">
+    ${previewImg ? `<img src="${previewImg}" alt="">` : '🗂️'}
+  </div>
+  <div class="title">${folder.name}</div>
+  <div class="buttons">
+    <a class="btn-map" href="${folder.path}">Map</a>
+  </div>
+`;
 
     container.appendChild(card);
   }
