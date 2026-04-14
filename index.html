@@ -1,60 +1,145 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>ImROI Iconen Overzicht</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fa;
+      color: #333;
+    }
+
+    header {
+      background: #1f4e79;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .preview {
+      height: 80px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview img {
+      max-height: 70px;
+      max-width: 100%;
+    }
+
+    .title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .buttons a {
+      display: inline-block;
+      margin: 5px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .btn-map {
+      background: #0078d4;
+      color: white;
+    }
+
+    .btn-sld {
+      background: #e5533d;
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Veiligheidsregio IJsselland – ImROI Iconen</h1>
+</header>
+
+<div class="container" id="container"></div>
+
+<footer>
+  Automatisch gegenereerd vanuit GitHub repository
+</footer>
+
 <script>
 (async () => {
   const repo = "Geo-BI-VrIJsselland/iconen";
   const baseUrl = `https://api.github.com/repos/${repo}/contents/`;
   const container = document.getElementById('container');
 
-  try {
-    const response = await fetch(baseUrl);
+  const response = await fetch(baseUrl);
+  const json = await response.json();
 
-    if (!response.ok) {
-      container.innerHTML = `<p>Fout bij laden (status ${response.status})</p>`;
-      return;
-    }
+  const folders = json.filter(file => file.type === 'dir');
 
-    const json = await response.json();
+  for (let folder of folders) {
 
-    if (!Array.isArray(json)) {
-      container.innerHTML = `<p>GitHub API gaf geen lijst terug 😬</p>
-      <pre>${JSON.stringify(json, null, 2)}</pre>`;
-      return;
-    }
+    // probeer eerste afbeelding uit map te halen als preview
+    let previewImg = '';
+    try {
+      const res = await fetch(baseUrl + folder.name);
+      const files = await res.json();
+      const img = files.find(f => f.name.endsWith('.png') || f.name.endsWith('.svg'));
+      if (img) previewImg = img.download_url;
+    } catch (e) {}
 
-    const folders = json.filter(file => file.type === 'dir');
+    const card = document.createElement('div');
+    card.className = 'card';
 
-    if (folders.length === 0) {
-      container.innerHTML = `<p>Geen mappen gevonden</p>`;
-      return;
-    }
+    card.innerHTML = `
+      <div class="preview">
+        ${previewImg ? `<img src="${previewImg}" alt="">` : '🗂️'}
+      </div>
+      <div class="title">${folder.name}</div>
+      <div class="buttons">
+        <a class="btn-map" href="${folder.path}">Map</a>
+      </div>
+    `;
 
-    for (let folder of folders) {
-
-      let previewImg = '';
-      try {
-        const res = await fetch(baseUrl + folder.name);
-        const files = await res.json();
-        const img = files.find(f => f.name.endsWith('.png') || f.name.endsWith('.svg'));
-        if (img) previewImg = img.download_url;
-      } catch (e) {}
-
-      const card = document.createElement('div');
-      card.className = 'card';
-
-      card.innerHTML = `
-        <div class="preview">
-          ${previewImg ? `<img src="${previewImg}" alt="">` : '🗂️'}
-        </div>
-        <div class="title">${folder.name}</div>
-        <div class="buttons">
-          <a class="btn-map" href="https://github.com/${repo}/tree/main/${folder.name}" target="_blank">Open map</a>
-        </div>
-      `;
-
-      container.appendChild(card);
-    }
-
-  } catch (err) {
-    container.innerHTML = `<p>Script error 😬</p><pre>${err}</pre>`;
+    container.appendChild(card);
   }
 })();
 </script>
+
+</body>
+</html>
