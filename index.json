@@ -5,7 +5,7 @@
   "GMS": [],
   "Infra": ["SOS_toegang.svg","Vliegtuig.svg","WAS-Paal-01.svg","WAS-Paal.svg","bus.svg","hectometer_paaltje.svg","hectometer_prorail.svg","hectometer_vaar.svg","seinstelsel-1955.svg","ship.svg","train.svg"],
   "Landelijke_standaard": ["Afzetting_Rws.png"],
-  "Leverancier_logos": ["LiveOp_logo.svg"],
+  "Leverancier_logos": ["LiveOp_logo.png","LiveOp_logo.svg"],
   "Natuurkaart": ["401.png","401_0.svg","401_1.svg","402.png","402_0.svg","402_1.svg","403.png","403_0.svg","403_1.svg","404.png","404_0.svg","404_1.svg","405_0.svg","405_1.svg","Restaurant.png"],
   "ObjectTypes": ["Ambulancezorg.png","Apothekers.png","BrandweerKazerne.svg","GGD.png","GGZ.png","Gehandicaptenzorg.png","Huisartsen.png","Huisartsenpost.png","Jeugdzorg.png","Medisch_behandelcentrum.png","Nederlandse_Rode_Kruis.png","Overig.png","Revalidatiecentrum.png","Thuiszorg.png","Verloskundigen.png","Verpleegzorg.png","Ziekenhuis.png"],
   "Overig": [],
