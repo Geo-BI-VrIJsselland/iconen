@@ -114,16 +114,30 @@
       }
 
       // BESTAND (icoon)
-      if (item.type === "file" && item.name.match(/\.(png|svg|jpg)$/i)) {
+if (item.type === "file" && item.name.match(/\.(png|svg|jpg)$/i)) {
 
-        card.innerHTML = `
-          <img src="${item.download_url}">
-          <div>${item.name}</div>
-        `;
+  card.innerHTML = `
+    <img src="${item.download_url}">
+    <div>${item.name}</div>
+    <div class="copy-msg" style="font-size:11px;color:green;display:none;">Gekopieerd!</div>
+  `;
 
-        card.onclick = () => {
-          window.open(item.html_url, "_blank");
-        };
+  card.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(item.download_url);
+
+      const msg = card.querySelector('.copy-msg');
+      msg.style.display = 'block';
+
+      setTimeout(() => {
+        msg.style.display = 'none';
+      }, 1200);
+
+    } catch (err) {
+      alert("Kopiëren mislukt 😬");
+    }
+  };
+}
       }
 
       container.appendChild(card);
